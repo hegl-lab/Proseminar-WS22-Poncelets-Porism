@@ -1,4 +1,4 @@
-import {WIDTH, HEIGHT, dragging} from "./poncelet_porism.js";
+import {WIDTH, HEIGHT, dragging, dragging_whole} from "./poncelet_porism.js";
 
 export let SCALE_FACTOR = 1.0;
 let window_move = [0, 0];
@@ -28,6 +28,9 @@ export function scaled_stroke_weight(weight) {
 }
 
 function mouseWheel(event) {
+    let position = [mouseX, mouseY];
+    if (position[0] < 0 || position[0] > WIDTH || position[1] < 0 || position[1] > HEIGHT) return true;
+
     let delta = event.delta;
     if (delta < 0) {
         SCALE_FACTOR *= 1.1;
@@ -38,11 +41,10 @@ function mouseWheel(event) {
 }
 
 function mouseDragged(event) {
-    if (event.buttons === 4 || !dragging) {
+    if (event.buttons === 4 || (dragging && dragging_whole)) {
         window_move[0] += event.movementX / SCALE_FACTOR;
         window_move[1] += event.movementY / SCALE_FACTOR;
     }
-
 }
 
 let touch_position;

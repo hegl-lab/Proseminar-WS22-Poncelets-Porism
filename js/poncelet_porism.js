@@ -7,28 +7,26 @@ import {
 } from "./scroll_and_zoom.js";
 import {Vector, vector_sum} from "./vector.js";
 
+import {draw_cayley, setup_cayley} from "./cayley.js";
+import {alpha_1, alpha_2, animate, beta_1, beta_2, corners, createSettings} from "./settings.js";
 
-export const WIDTH = 1000;
-export const HEIGHT = 1000;
+export const WIDTH = 500;
+export const HEIGHT = 500;
 
 // points on the ellipse
 let points = [];
 
 // true if something is being dragged at the moment
 export let dragging = false;
-let dragging_inner = false;
-let dragging_start = false;
+export let dragging_inner = false;
+export let dragging_start = false;
+export let dragging_whole = false;
 
-let ellipse_scale = 400;
-// size of outer ellipse
-let alpha_1 = 2;
-let beta_1 = 2;
-// size of inner ellipse
-let alpha_2 = 1;
-let beta_2 = 1;
+let ellipse_scale = 200;
+
 // position of inner ellipse
-let inner_x = 0 ;
-let inner_y = 0;
+export let inner_x = 0;
+export let inner_y = 0;
 // angle of starting point
 let start_angle = 0;
 
@@ -145,9 +143,6 @@ function generate_angle(i) {
     let [x1, y1] = point1.coords();
     let [x2, y2] = point2.coords();
 
-    //line(src_x, src_y, x1, y1);
-    //line(src_x, src_y, x2, y2);
-
     return (distance(src_x, src_y, x1, y1) > distance(src_x, src_y, x2, y2)) ? position_to_angle(x1, y1) : position_to_angle(x2, y2);
 }
 
@@ -158,23 +153,27 @@ function generate_points() {
     points.push(current_angle);
     window.points = points;
 
-    for (let i = 1; !is_near(start_angle, current_angle) && i < 500; ++i) {
+    for (let i = 1; !is_near(start_angle, current_angle) && i < corners; ++i) {
         current_angle = generate_angle(i);
         points.push(current_angle);
     }
 }
 
 function setup() {
-    createCanvas(WIDTH, HEIGHT);
+    createCanvas(2 * WIDTH, HEIGHT);
     strokeWeight(1);
     generate_points();
-
+    setup_cayley();
+    createSettings();
 }
 
 function draw() {
-    background(220);
+    push();
+    fill(255);
+    stroke(255);
+    rect(0, 0, WIDTH, HEIGHT);
 
-    start_angle += 0.0025 % 2 * PI;
+    if (animate) start_angle += 0.0025 % 2 * PI;
 
     translate(WIDTH / 2, HEIGHT / 2);
     scale_and_translate();
@@ -190,6 +189,7 @@ function draw() {
     let [point_x, point_y] = angle_to_position(start_angle);
     circle(point_x, point_y, 10);
 
+    // follow tangent points
     points = [];
     generate_points();
 
@@ -216,17 +216,35 @@ function draw() {
         let [x, y] = mouse_position();
         start_angle = position_to_angle(x, y);
     }
+    pop();
+
+    // draw cayley polynomials
+    push();
+    fill(255);
+    stroke(255);
+    rect(WIDTH, 0, WIDTH, HEIGHT);
+    draw_cayley();
+    pop();
 }
 
 // checks if a point is selected and switches it into "dragging-mode"
 function mousePressed(event) {
-    if (event.force || (event.path[0].className === 'p5Canvas' && event.button === 0)) {
-        if (isMouseInInnerEllipse()) {
-            dragging = true;
-            dragging_inner = true;
-        } else if (isMouseOnPoint()) {
-            dragging = true;
-            dragging_start = true;
+    if (event.force || (event.target.className === 'p5Canvas' && event.button === 0)) {
+        if (mouseX > WIDTH) {
+            // clicked on cayley closure parts
+            inner_x = 0;
+            inner_y = 0;
+        } else {
+            if (isMouseInInnerEllipse()) {
+                dragging = true;
+                dragging_inner = true;
+            } else if (isMouseOnPoint()) {
+                dragging = true;
+                dragging_start = true;
+            } else {
+                dragging = true;
+                dragging_whole = true;
+            }
         }
     }
 }
@@ -236,6 +254,7 @@ function mouseReleased() {
     dragging = false;
     dragging_inner = false;
     dragging_start = false;
+    dragging_whole = false;
 }
 
 // set window method so p5.js knows which methods to call
