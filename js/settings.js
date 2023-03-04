@@ -66,4 +66,5 @@ export function createSettings() {
     settings.addBoolean("Show Octagon function", true, update_cayley);
     settings.addBoolean("Show Nonagon function", true, update_cayley);
     settings.addButton("Update curves", redraw_cayley)
+    update_bars();
 }
