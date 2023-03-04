@@ -1,17 +1,15 @@
 import {
     scale_and_translate,
-    position_range,
     mouse_position,
-    SCALE_FACTOR,
     scaled_stroke_weight
 } from "./scroll_and_zoom.js";
-import {Vector, vector_sum} from "./vector.js";
+import {Vector} from "./vector.js";
 
 import {draw_cayley, setup_cayley} from "./cayley.js";
 import {alpha_1, alpha_2, animate, beta_1, beta_2, corners, createSettings} from "./settings.js";
 
-export const WIDTH = 500;
-export const HEIGHT = 500;
+export const WIDTH = 600;
+export const HEIGHT = 600;
 
 // points on the ellipse
 let points = [];
@@ -22,7 +20,7 @@ export let dragging_inner = false;
 export let dragging_start = false;
 export let dragging_whole = false;
 
-let ellipse_scale = 200;
+let ellipse_scale = 250;
 
 // position of inner ellipse
 export let inner_x = 0;
@@ -35,17 +33,6 @@ function angle_to_position(angle) {
         ellipse_scale * alpha_1 * cos(angle) * 0.5,
         ellipse_scale * beta_1 * sin(angle) * 0.5
     ];
-}
-
-function dotted_line(x1, y1, x2, y2) {
-    let length = Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-
-    let dx = (x2 - x1) / length;
-    let dy = (y2 - y1) / length;
-
-    for (let i = 0; i < length / 10; ++i) {
-        line(x1 + dx * i * 10, y1 + dy * i * 10, x1 + dx * (i * 10 + 5), y1 + dy * (i * 10 + 5));
-    }
 }
 
 function distance(x0, y0, x1, y1) {
